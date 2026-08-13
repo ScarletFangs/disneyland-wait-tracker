@@ -54,8 +54,7 @@ android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 
 # Personal / job-application documents — never publish
-*.pdf
-resume_v6.md
+overleaf_changes.md
 
 # Local agent + editor settings and instructions
 .claude/

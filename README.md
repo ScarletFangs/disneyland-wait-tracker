@@ -99,6 +99,10 @@ flutter run
 v1 is in a polish pass. All six screens work, and each has been walked through its offline,
 loading, and double tap states. The visual treatment is deliberately unfinished.
 
+Disneyland Park only for now. California Adventure is the next thing I want to add, so the park
+id lives as a named constant in `ThemeParksApi` instead of being inlined at the call site.
+Adding the second park is mostly a matter of fetching both and grouping the dashboard by park.
+
 Rough edges I know about and haven't fixed:
 
 - The dashboard, showtimes, and favorites screens each fetch independently on launch, so the

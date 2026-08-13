@@ -53,9 +53,6 @@ firebase.json
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 
-# Personal / job-application documents — never publish
-overleaf_changes.md
-
 # Local agent + editor settings and instructions
 .claude/
 .cursor/

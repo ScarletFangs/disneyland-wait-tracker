@@ -19,38 +19,120 @@ class _AuthScreenState extends State<AuthScreen> {
 
   bool _isLoading = false;
 
+  static const String _appName = 'Wait Tracker';
+  static const String _tagline = 'Every Disneyland wait, one screen.';
+  static const double _logoSize = 88;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildBrand(),
+                const SizedBox(height: 32),
+                _buildFormCard(),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: _isLoading ? null : _guestLogin,
+                  child: const Text("Continue as Guest"),
+                ),
+                Text(
+                  "No account needed — you can upgrade later.",
+                  style: AppTextStyles.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBrand() {
+    return Column(
+      children: [
+        Container(
+          width: _logoSize,
+          height: _logoSize,
+          decoration: const BoxDecoration(
+            color: AppColors.primaryLight,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.castle,
+            size: 48,
+            color: AppColors.primaryDark,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(_appName, style: AppTextStyles.displayLarge),
+        const SizedBox(height: 6),
+        Text(
+          _tagline,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormCard() {
+    final errorText = _errorText;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
                 controller: _emailController,
                 validator: validateEmail,
-                decoration: InputDecoration(labelText: "Email"),
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                decoration: const InputDecoration(labelText: "Email"),
               ),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _passwordController,
                 validator: validatePassword,
-                decoration: InputDecoration(labelText: "Password"),
+                decoration: const InputDecoration(labelText: "Password"),
                 obscureText: true,
               ),
-              if (_errorText != null)
-                Text(_errorText!, style: TextStyle(color: AppColors.error)),
+              if (errorText != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  errorText,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.errorDark,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _isLoading ? null : _userLogin,
-                child: Text("Login"),
+                child: const Text("Log In"),
               ),
-              ElevatedButton(
+              const SizedBox(height: 12),
+              OutlinedButton(
                 onPressed: _isLoading ? null : _signUp,
-                child: Text("Sign Up"),
-              ),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _guestLogin,
-                child: Text("Continue as Guest"),
+                child: const Text("Create Account"),
               ),
             ],
           ),

@@ -16,6 +16,9 @@ class ShowTime {
     return '${format.format(startTime.toLocal())} - ${format.format(end.toLocal())}';
   }
 
+  /// True once the performance (or the end of a range) is behind us.
+  bool get isPast => (endTime ?? startTime).isBefore(DateTime.now());
+
   ShowTime({
     required this.type,
     required this.startTime,

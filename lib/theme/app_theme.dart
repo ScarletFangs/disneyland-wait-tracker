@@ -22,10 +22,12 @@ class AppColors {
 
   // Accent — Pale Spire Gold
   static const Color accent = Color(0xFFF2D6A0);
+  static const Color accentDark = Color(0xFFC9962E); // Lightning Lane bolt
 
   // Semantic (forms / validation — kept separate from the wait scale below)
   static const Color warning = Color(0xFFF3D89C);
   static const Color error = Color(0xFFEFAEB4);
+  static const Color errorDark = Color(0xFFB4505C); // readable error text
   static const Color success = Color(0xFFA6D5B0);
 
   // Wait-time scale — the dashboard's core visual language (muted pastels)
@@ -35,6 +37,17 @@ class AppColors {
   static const Color waitClosed = Color(
     0xFFC7C5D2,
   ); // grey        · closed / refurb
+
+  // Lands — section headers on Wait Times, header on Ride Detail
+  static const Color landMainStreet = Color(0xFFF2B8B5); // soft rose
+  static const Color landAdventureland = Color(0xFFB5D6A7); // jungle green
+  static const Color landNewOrleansSquare = Color(0xFFCDB8E0); // lavender
+  static const Color landCritterCountry = Color(0xFFDCC3A1); // warm tan
+  static const Color landFrontierland = Color(0xFFF0C4A0); // terracotta
+  static const Color landFantasyland = secondary; // blush pink
+  static const Color landToontown = Color(0xFFF6E39B); // sunny yellow
+  static const Color landTomorrowland = Color(0xFFA8D8E0); // sky teal
+  static const Color landGalaxysEdge = Color(0xFFB9C2CF); // slate
 
   // Backgrounds
   static const Color background = Color(0xFFF7F6FB); // page background
@@ -200,6 +213,13 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.errorDark, width: 1.5),
+        ),
+        errorStyle: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.errorDark,
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -249,6 +269,23 @@ class AppTheme {
         ),
         side: BorderSide.none,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+
+      // Segmented Button (Wait Times sort toggle)
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          backgroundColor: AppColors.surface,
+          foregroundColor: AppColors.textSecondary,
+          selectedBackgroundColor: AppColors.primaryLight,
+          selectedForegroundColor: AppColors.textPrimary,
+          side: const BorderSide(color: AppColors.divider),
+          textStyle: AppTextStyles.labelMedium,
+        ),
+      ),
+
+      // Loading spinners
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primaryDark,
       ),
 
       // Divider

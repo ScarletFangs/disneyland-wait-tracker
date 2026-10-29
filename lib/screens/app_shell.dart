@@ -14,6 +14,29 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
 
+  static const List<BottomNavigationBarItem> _navItems = [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.hourglass_empty_rounded),
+      activeIcon: Icon(Icons.hourglass_bottom_rounded),
+      label: 'Wait Times',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.theater_comedy_outlined),
+      activeIcon: Icon(Icons.theater_comedy),
+      label: 'Showtimes',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.favorite_border),
+      activeIcon: Icon(Icons.favorite),
+      label: 'Favorites',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person_outline),
+      activeIcon: Icon(Icons.person),
+      label: 'Profile',
+    ),
+  ];
+
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -25,7 +48,7 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: [
+        children: const [
           DashboardScreen(),
           ShowtimeScreen(),
           FavoritesScreen(),
@@ -33,18 +56,7 @@ class _AppShellState extends State<AppShell> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Dashboard'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.schedule),
-            label: 'Showtimes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+        items: _navItems,
         currentIndex: _currentIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,

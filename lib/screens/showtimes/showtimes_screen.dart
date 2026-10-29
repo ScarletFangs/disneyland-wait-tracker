@@ -1,5 +1,8 @@
 import 'package:disneyapp/services/themeparks_api.dart';
-import 'package:disneyapp/theme/app_theme.dart';
+import 'package:disneyapp/utils/show_sorting.dart';
+import 'package:disneyapp/widgets/attribution_footer.dart';
+import 'package:disneyapp/widgets/show_card.dart';
+import 'package:disneyapp/widgets/status_message.dart';
 import 'package:flutter/material.dart';
 import 'package:disneyapp/models/show.dart';
 
@@ -11,6 +14,7 @@ class ShowtimeScreen extends StatefulWidget {
 }
 
 class _ShowtimeState extends State<ShowtimeScreen> {
+  final _api = ThemeParksApi();
   List<Show> _shows = [];
   bool _isLoading = true;
   String? _errorText;
@@ -18,7 +22,7 @@ class _ShowtimeState extends State<ShowtimeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Show Times")),
+      appBar: AppBar(title: const Text("Showtimes")),
       body: _buildBody(),
     );
   }
@@ -31,15 +35,23 @@ class _ShowtimeState extends State<ShowtimeScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
-    if (_errorText != null) {
+
+    final errorText = _errorText;
+    if (errorText != null) {
       return RefreshIndicator(
         onRefresh: _loadShows,
         child: ListView(
-          physics: AlwaysScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 96),
           children: [
-            Text(_errorText!, style: TextStyle(color: AppColors.error)),
+            StatusMessage(
+              icon: Icons.cloud_off,
+              message: errorText,
+              hint: 'Pull down to try again.',
+              isError: true,
+            ),
           ],
         ),
       );
@@ -48,27 +60,14 @@ class _ShowtimeState extends State<ShowtimeScreen> {
     return RefreshIndicator(
       onRefresh: _loadShows,
       child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
         itemCount: _shows.length + 1,
         itemBuilder: (context, index) {
           if (index == _shows.length) {
-            return Center(child: Text("Data from ThemeParks.wiki"));
+            return const AttributionFooter();
           }
-          final show = _shows[index];
-          return ListTile(
-            title: Text(show.name),
-            subtitle: show.showTimes.isEmpty
-                ? Text(
-                    "No Shows Today",
-                    style: TextStyle(color: AppColors.error),
-                  )
-                : Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: show.showTimes.map((showTime) {
-                      return Chip(label: Text(showTime.formattedTime));
-                    }).toList(),
-                  ),
-          );
+          return ShowCard(show: _shows[index]);
         },
       ),
     );
@@ -76,16 +75,18 @@ class _ShowtimeState extends State<ShowtimeScreen> {
 
   Future<void> _loadShows() async {
     try {
-      final showInfo = await ThemeParksApi().fetchShows();
+      final showInfo = await _api.fetchShows();
+      if (!mounted) return;
       setState(() {
-        _shows = showInfo;
+        _shows = sortShowsForDisplay(showInfo);
         _isLoading = false;
         _errorText = null;
       });
     } catch (e) {
       debugPrint("Error in showtimes_screen: $e");
+      if (!mounted) return;
       setState(() {
-        _errorText = "Failed to load show data. Pull down to try again.";
+        _errorText = "Couldn't load showtimes.";
         _isLoading = false;
       });
     }

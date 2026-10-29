@@ -1,4 +1,6 @@
 import 'package:disneyapp/theme/app_theme.dart';
+import 'package:disneyapp/widgets/profile_header.dart';
+import 'package:disneyapp/widgets/status_message.dart';
 import 'package:flutter/material.dart';
 import 'package:disneyapp/services/auth_service.dart';
 import 'package:disneyapp/utils/auth_validators.dart';
@@ -11,7 +13,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final authServiceObject = AuthService();
+  final _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _errorText;
@@ -19,81 +21,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
   @override
-  Widget build(BuildContext context) {
-    final userAnonymous = authServiceObject.isCurrentUserAnonymous;
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
-    if (userAnonymous == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text("Profile")),
-        body: SafeArea(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Profile")),
+      body: SafeArea(child: _buildBody()),
+    );
+  }
+
+  Widget _buildBody() {
+    final isAnonymous = _authService.isCurrentUserAnonymous;
+
+    if (isAnonymous == null) {
+      return const StatusMessage(
+        icon: Icons.error_outline,
+        message: "Couldn't load your profile",
+        hint: 'Try closing and reopening the app.',
+        isError: true,
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        ProfileHeader(
+          email: _authService.currentUserEmail,
+          isGuest: isAnonymous,
+        ),
+        if (isAnonymous) ...[const SizedBox(height: 16), _buildUpgradeCard()],
+        const SizedBox(height: 24),
+        OutlinedButton.icon(
+          onPressed: _authService.logout,
+          icon: const Icon(Icons.logout),
+          label: const Text("Log Out"),
+        ),
+        if (isAnonymous) ...[
+          const SizedBox(height: 8),
+          Text(
+            "Guest favorites are lost when you log out.",
+            style: AppTextStyles.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildUpgradeCard() {
+    final errorText = _errorText;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Text("Upgrade your account", style: AppTextStyles.headingMedium),
+              const SizedBox(height: 6),
               Text(
-                "Something went wrong loading user information",
-                style: TextStyle(color: AppColors.error),
+                "Create an account to keep your favorites across devices. "
+                "Everything you saved as a guest comes with you.",
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                validator: validateEmail,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                decoration: const InputDecoration(labelText: "Email"),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _passwordController,
+                validator: validatePassword,
+                decoration: const InputDecoration(labelText: "Password"),
+                obscureText: true,
+              ),
+              if (errorText != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  errorText,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.errorDark,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _linkAccount,
+                child: const Text("Create Account"),
               ),
             ],
           ),
         ),
-      );
-    }
-
-    if (userAnonymous) {
-      return Scaffold(
-        appBar: AppBar(title: Text("Profile")),
-        body: SafeArea(child: _buildAnonymousView()),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(title: Text("Profile")),
-      body: SafeArea(child: _buildSignedInView()),
-    );
-  }
-
-  Widget _buildAnonymousView() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _emailController,
-            validator: validateEmail,
-            decoration: InputDecoration(labelText: "Email"),
-          ),
-          TextFormField(
-            controller: _passwordController,
-            validator: validatePassword,
-            decoration: InputDecoration(labelText: "Password"),
-            obscureText: true,
-          ),
-          if (_errorText != null)
-            Text(_errorText!, style: TextStyle(color: AppColors.error)),
-          if (_errorText == null)
-            Text("Login to save your preferences across devices!"),
-          ElevatedButton(
-            onPressed: _isLoading ? null : _linkAccount,
-            child: Text("Sign Up"),
-          ),
-          ElevatedButton(
-            onPressed: authServiceObject.logout,
-            child: Text("Log Out"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSignedInView() {
-    return SafeArea(
-      child: Column(
-        children: [
-          Text(authServiceObject.currentUserEmail ?? "Email not Found"),
-          ElevatedButton(
-            onPressed: authServiceObject.logout,
-            child: Text("Log Out"),
-          ),
-        ],
       ),
     );
   }
@@ -104,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLoading = true);
     final enteredEmail = _emailController.text;
     final enteredPassword = _passwordController.text;
-    final errorText = await authServiceObject.linkGuestToAccount(
+    final errorText = await _authService.linkGuestToAccount(
       enteredEmail,
       enteredPassword,
     );

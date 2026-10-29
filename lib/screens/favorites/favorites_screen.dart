@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:disneyapp/screens/ride_detail/ride_detail_screen.dart';
 import 'package:disneyapp/services/auth_service.dart';
 import 'package:disneyapp/services/themeparks_api.dart';
 import 'package:disneyapp/theme/app_theme.dart';
+import 'package:disneyapp/widgets/ride_card.dart';
+import 'package:disneyapp/widgets/status_message.dart';
 import 'package:flutter/material.dart';
 import 'package:disneyapp/services/firestore_service.dart';
 import 'package:disneyapp/models/ride.dart';
-import 'package:disneyapp/utils/ride_display.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -15,29 +17,38 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
+  final _authService = AuthService();
+  final _firestoreService = FirestoreService();
+  final _api = ThemeParksApi();
   final Map<String, Ride> _ridesById = {};
+  // Created once so rebuilds don't re-subscribe to Firestore.
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _favoritesStream;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    final userId = _authService.currentUserId;
+    if (userId != null) {
+      _favoritesStream = _firestoreService.favoritesStream(userId);
+    }
     _loadRideWait();
   }
 
   @override
   Widget build(BuildContext context) {
-    String? userId = AuthService().currentUserId;
-
-    if (userId == null) {
-      return Text("User failed to load");
-    }
+    final stream = _favoritesStream;
 
     return Scaffold(
-      appBar: AppBar(title: Text("Favorites")),
-      body: StreamBuilder(
-        stream: FirestoreService().favoritesStream(userId),
-        builder: _buildBody,
-      ),
+      appBar: AppBar(title: const Text("Favorites")),
+      body: stream == null
+          ? const StatusMessage(
+              icon: Icons.error_outline,
+              message: "Couldn't load your favorites",
+              hint: 'Try logging out and back in.',
+              isError: true,
+            )
+          : StreamBuilder(stream: stream, builder: _buildBody),
     );
   }
 
@@ -46,62 +57,83 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot,
   ) {
     if (snapshot.hasError) {
-      return Text("Error loading favorites");
-    }
-
-    if (!snapshot.hasData) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    final favoritesList = snapshot.data!.docs;
-
-    //no favorites yet
-    if (favoritesList.isEmpty) {
-      return Text("No favorites yet, tap the heart icon on any rides!");
-    } else {
-      return RefreshIndicator(
-        onRefresh: _loadRideWait,
-        child: ListView.builder(
-          itemCount: favoritesList.length,
-          itemBuilder: (context, index) {
-            final document = favoritesList[index];
-            final rideName =
-                document.data()['rideName'] as String? ?? "Unknown Ride";
-            final ride = _ridesById[document.id];
-            return ListTile(
-              title: Text(rideName),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.favorite, color: AppColors.secondary),
-                  Text(ride?.waitLabel ?? '-'),
-                ],
-              ),
-            );
-          },
-        ),
+      debugPrint("Favorites stream error: ${snapshot.error}");
+      return const StatusMessage(
+        icon: Icons.cloud_off,
+        message: "Couldn't load your favorites",
+        isError: true,
       );
     }
+
+    final data = snapshot.data;
+    if (data == null || _isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final favoritesList = data.docs;
+    if (favoritesList.isEmpty) {
+      return const StatusMessage(
+        icon: Icons.favorite_border,
+        message: 'No favorites yet',
+        hint: 'Tap ♡ on any ride to save it here.',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadRideWait,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: favoritesList.length,
+        itemBuilder: (context, index) {
+          final document = favoritesList[index];
+          final ride = _ridesById[document.id];
+          if (ride == null) {
+            final rideName =
+                document.data()['rideName'] as String? ?? "Unknown Ride";
+            return _buildMissingRideCard(rideName);
+          }
+          return RideCard(ride: ride, onTap: () => _openRideDetail(ride));
+        },
+      ),
+    );
+  }
+
+  /// A favorite that isn't in today's API data (or the fetch failed).
+  Widget _buildMissingRideCard(String rideName) {
+    return Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        title: Text(rideName, style: AppTextStyles.headingMedium),
+        subtitle: Text(
+          "No wait data right now",
+          style: AppTextStyles.bodySmall,
+        ),
+      ),
+    );
+  }
+
+  void _openRideDetail(Ride ride) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => RideDetailScreen(ride: ride)),
+    );
   }
 
   Future<void> _loadRideWait() async {
     try {
-      final favoriteInfos = await ThemeParksApi().fetchRides();
+      final rides = await _api.fetchRides();
+      if (!mounted) return;
       setState(() {
-        for (int i = 0; i < favoriteInfos.length; i++) {
-          _ridesById[favoriteInfos[i].id] = favoriteInfos[i];
+        for (final ride in rides) {
+          _ridesById[ride.id] = ride;
         }
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        debugPrint("Failed to load wait times: $e");
-        _isLoading = false;
-      });
+      debugPrint("Failed to load wait times: $e");
+      if (!mounted) return;
+      setState(() => _isLoading = false);
     }
   }
 }

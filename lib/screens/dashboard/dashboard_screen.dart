@@ -10,7 +10,7 @@ import 'package:disneyapp/widgets/land_section_header.dart';
 import 'package:disneyapp/widgets/ride_card.dart';
 import 'package:disneyapp/widgets/status_message.dart';
 
-enum WaitSortMode { byLand, shortestWait }
+enum WaitSortMode { byLand, byName }
 
 /// One row in the wait-times list: either a land header or a ride.
 sealed class _DashboardEntry {
@@ -124,9 +124,9 @@ class _DashboardState extends State<DashboardScreen> {
             icon: Icon(Icons.map_outlined),
           ),
           ButtonSegment(
-            value: WaitSortMode.shortestWait,
-            label: Text('Shortest Wait'),
-            icon: Icon(Icons.timer_outlined),
+            value: WaitSortMode.byName,
+            label: Text('By Name'),
+            icon: Icon(Icons.sort_by_alpha),
           ),
         ],
         selected: {_sortMode},
@@ -155,7 +155,7 @@ class _DashboardState extends State<DashboardScreen> {
           ),
           _RideEntry(:final ride) => RideCard(
             ride: ride,
-            isLandShown: _sortMode == WaitSortMode.shortestWait,
+            isLandShown: _sortMode == WaitSortMode.byName,
             onTap: () => _openRideDetail(ride),
           ),
         };
@@ -173,10 +173,8 @@ class _DashboardState extends State<DashboardScreen> {
             for (final ride in group.value) _RideEntry(ride),
           ],
         ];
-      case WaitSortMode.shortestWait:
-        return [
-          for (final ride in sortByShortestWait(_rides)) _RideEntry(ride),
-        ];
+      case WaitSortMode.byName:
+        return [for (final ride in sortByName(_rides)) _RideEntry(ride)];
     }
   }
 

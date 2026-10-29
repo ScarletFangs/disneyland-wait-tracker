@@ -51,20 +51,18 @@ void main() {
     });
   });
 
-  group('sortByShortestWait', () {
-    test('should put shortest waits first and rides without a wait last', () {
-      final sorted = sortByShortestWait([
-        _ride('Long', wait: 60),
-        _ride('Closed', wait: 5, status: RideStatus.closed),
-        _ride('Short', wait: 10),
-        _ride('Down', status: RideStatus.down),
+  group('sortByName', () {
+    test('should sort A–Z ignoring capitalization and wait or status', () {
+      final sorted = sortByName([
+        _ride('Space Mountain', wait: 5),
+        _ride('autopia', status: RideStatus.closed),
+        _ride('Matterhorn Bobsleds', wait: 60),
       ]);
 
       expect(sorted.map((ride) => ride.name), [
-        'Short',
-        'Long',
-        'Closed',
-        'Down',
+        'autopia',
+        'Matterhorn Bobsleds',
+        'Space Mountain',
       ]);
     });
   });

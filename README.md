@@ -96,8 +96,11 @@ flutter run
 
 ## Status
 
-v1 is in a polish pass. All six screens work, and each has been walked through its offline,
-loading, and double tap states. The visual treatment is deliberately unfinished.
+All six screens work, and each has been walked through its offline, loading, and double tap
+states. A visual redesign of every screen is finished and merged. A second design pass is being worked out in Figma before it goes into code.
+
+Alerts are not built. The Firestore methods for storing a wait threshold exist, but no screen
+uses them yet, and push notifications are out of scope for v1.
 
 Disneyland Park only for now. California Adventure is the next thing I want to add, so the park
 id lives as a named constant in `ThemeParksApi` instead of being inlined at the call site.
@@ -109,7 +112,7 @@ Rough edges I know about and haven't fixed:
   live endpoint gets hit more than once per start.
 - Time formatting uses `.toLocal()`, which follows the device timezone instead of pinning
   America/Los_Angeles.
-- Stale past dated showtime entries can still render as though they're today.
+- Stale past dated showtime entries are greyed out but still listed.
 - No state management package. Plain `setState` throughout, which holds up fine at this size.
 
 ## Notes

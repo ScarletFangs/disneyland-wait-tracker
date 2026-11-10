@@ -13,6 +13,14 @@
 > - **Screens = 6** behind a **bottom navigation bar**: Dashboard · Showtimes · Favorites/Alerts · Profile (tabs) + Ride Detail + Auth. The §3.1 list gains a **Showtimes** screen (live entertainment) not in the original spec.
 > - Auth is **email/password + anonymous guest only** — **no Google Sign-In in v1** (supersedes FR-1.2's mention).
 
+> 📋 **Implementation status (2026-11-09).** The requirement text below is the original February spec and was not edited. Against the code on `main`:
+> - **Built:** FR-1.1 (guest mode — guests *can* save favorites, unlike the stated limitation), FR-1.2 (email/password only), FR-2.1, 2.2, 2.4 (non-operating rides are badged, not regrouped at the bottom), 2.10, 2.11, FR-3.1, 3.2, FR-3.3 without the booking button, FR-3.6, FR-5.1, 5.3, 5.4, FR-6.3 in part (view email, logout).
+> - **Partly built:** FR-2.3 (Lightning Lane return time shows on the ride card and Ride Detail; no `$LL` badge), FR-2.9 (By Land / By Name only), FR-5.2 and FR-2.12 (a separate Favorites tab, not a dashboard filter chip).
+> - **Not built:** FR-1.3, FR-2.5–2.8 (filters, search), FR-3.4 (static ride info), FR-3.5 and all of §3.2.4 (alerts — Firestore service methods exist, no UI), FR-6.1, 6.2, change password and delete account, NFR-1.4 (offline cache).
+> - **Differs from the spec:** data is fetched straight from ThemeParks.wiki by the client, not read from Firestore (FR-2.1, 2.10, 3.2, NFR-1.2). Favorites are documents under `users/{uid}/favorites/{rideId}`, not an array. The favorite icon is a heart, not a star. A fourth status, `DOWN`, exists.
+>
+> Live status is tracked in `PROGRESS.md`.
+
 ---
 
 # **1\. Introduction**
@@ -353,4 +361,5 @@ Nice to have (probably implement after bootstrap completion):
 | :---- | :---- |
 | 02/18/2026 | Finished majority of project description of what is needed in app for planning Note: gave up on rest of NFR as it became out of scope and now im delaying actually making the project |
 | 06/05/2026 | v1 reconciliation banner added (top). Switched data source queue-times.com → ThemeParks.wiki; Lightning Lane *display* moved into v1 (booking/alerts still deferred); added a Showtimes screen (6 screens total, bottom nav). See ROADMAP.md + handoff §5/§9. |
+| 11/09/2026 | Implementation status banner added (top), listing which requirements are built, partly built, or not built. Requirement text unchanged. |
 

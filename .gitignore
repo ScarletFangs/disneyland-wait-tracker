@@ -58,3 +58,10 @@ ios/Runner/GoogleService-Info.plist
 .cursor/
 CLAUDE.md
 LEARNING.md
+
+# Internal planning and progress notes (kept locally, not published)
+PROGRESS.md
+ROADMAP.md
+HANDOFF.md
+disneyland-app-handoff.md
+.vscode/

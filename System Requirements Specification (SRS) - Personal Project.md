@@ -6,11 +6,11 @@
 
 ---
 
-> ⚠️ **v1 Reconciliation (2026-06-05) — read this first.** This SRS was written Feb 18, before the v1 build plan was finalized. Where it conflicts, the current source of truth is **`ROADMAP.md`** + **`disneyland-app-handoff.md` §5/§9**. Key deltas:
+> ⚠️ **v1 Reconciliation (2026-06-05) — read this first.** This SRS was written Feb 18, before the v1 build plan was finalized. Where the requirements below conflict with these notes, the notes win. Key deltas:
 > - **Data source is the ThemeParks.wiki API**, not queue-times.com (so NFR-3.1's "match queue-times.com" now means ThemeParks.wiki). Status is an enum (OPERATING/CLOSED/REFURBISHMENT); the API has **no `land`** (joined from a curated `assets/data/ride_lands.json`) and **no ride images**.
 > - **Lightning Lane:** *display* (return time / price / state) ships in v1 (FR-2.3, and FR-3.3 minus the booking button). LL **booking** (the "Book in official app" button) and LL **alerts** are **deferred**. LL coverage is sparse → always show a "Not available" state.
-> - **Push notifications are deferred** out of v1 — so FR-4.2, FR-4.4, NFR-1.5, NFR-1.6, NFR-3.2 are *architected-for, not built*. The My Alerts screen still does full Firestore CRUD (FR-4.1, FR-4.3); it just doesn't fire pushes.
-> - **Screens = 6** behind a **bottom navigation bar**: Dashboard · Showtimes · Favorites/Alerts · Profile (tabs) + Ride Detail + Auth. The §3.1 list gains a **Showtimes** screen (live entertainment) not in the original spec.
+> - **Push notifications are deferred** out of v1 — so FR-4.2, FR-4.4, NFR-1.5, NFR-1.6, NFR-3.2 are *architected-for, not built*. Storing and managing alert thresholds (FR-4.1, FR-4.3) was planned for v1 but has not been built yet; see the implementation status below.
+> - **Screens = 6** behind a **bottom navigation bar**: Wait Times · Showtimes · Favorites · Profile (tabs) + Ride Detail + Auth. The §3.1 list gains a **Showtimes** screen (live entertainment) not in the original spec.
 > - Auth is **email/password + anonymous guest only** — **no Google Sign-In in v1** (supersedes FR-1.2's mention).
 
 > 📋 **Implementation status (2026-11-09).** The requirement text below is the original February spec and was not edited. Against the code on `main`:
@@ -19,7 +19,7 @@
 > - **Not built:** FR-1.3, FR-2.5–2.8 (filters, search), FR-3.4 (static ride info), FR-3.5 and all of §3.2.4 (alerts — Firestore service methods exist, no UI), FR-6.1, 6.2, change password and delete account, NFR-1.4 (offline cache).
 > - **Differs from the spec:** data is fetched straight from ThemeParks.wiki by the client, not read from Firestore (FR-2.1, 2.10, 3.2, NFR-1.2). Favorites are documents under `users/{uid}/favorites/{rideId}`, not an array. The favorite icon is a heart, not a star. A fourth status, `DOWN`, exists.
 >
-> Live status is tracked in `PROGRESS.md`.
+> The project README has the current status of the app.
 
 ---
 
@@ -326,7 +326,7 @@ Wait Tracker is a **companion application** that works alongside (not replacing)
   * **Optimization:** Use real-time listeners instead of polling from client  
   * **Monitoring:** Firebase console usage metrics
 
-#### **TODO \- Finish this section because…. Too lazy also items mentioned becoming out of scope of what this project is really for (Flutter bootstrap \+ self-use/test, not really for public usage… yet…)**
+*Note: the non-functional requirements stop here. The remaining items fell outside the scope of this project, which is a Flutter bootstrap submission and a personal-use app, not a public release.*
 
 # **5\. Success Metrics & Launch Criteria**
 
@@ -359,7 +359,7 @@ Nice to have (probably implement after bootstrap completion):
 
 | Date | Changes |
 | :---- | :---- |
-| 02/18/2026 | Finished majority of project description of what is needed in app for planning Note: gave up on rest of NFR as it became out of scope and now im delaying actually making the project |
-| 06/05/2026 | v1 reconciliation banner added (top). Switched data source queue-times.com → ThemeParks.wiki; Lightning Lane *display* moved into v1 (booking/alerts still deferred); added a Showtimes screen (6 screens total, bottom nav). See ROADMAP.md + handoff §5/§9. |
-| 11/09/2026 | Implementation status banner added (top), listing which requirements are built, partly built, or not built. Requirement text unchanged. |
+| 02/18/2026 | Finished the majority of the project description needed for planning. The remaining non-functional requirements were left out as out of scope. |
+| 06/05/2026 | v1 reconciliation banner added (top). Switched data source queue-times.com → ThemeParks.wiki; Lightning Lane *display* moved into v1 (booking/alerts still deferred); added a Showtimes screen (6 screens total, bottom nav). |
+| 11/09/2026 | Implementation status banner added (top), listing which requirements are built, partly built, or not built. Removed references to internal planning notes. |
 

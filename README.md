@@ -97,7 +97,8 @@ flutter run
 ## Status
 
 All six screens work, and each has been walked through its offline, loading, and double tap
-states. A visual redesign of every screen is finished and merged. A second design pass is being worked out in Figma before it goes into code.
+states. A visual redesign of every screen is finished and merged. A second design pass is being
+worked out in Figma before it goes into code.
 
 Alerts are not built. The Firestore methods for storing a wait threshold exist, but no screen
 uses them yet, and push notifications are out of scope for v1.
